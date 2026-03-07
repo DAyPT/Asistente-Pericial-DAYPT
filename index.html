@@ -3,240 +3,201 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Asistente DAPT - Pericia Oficial</title>
+    <title>Asistente DAPT - Pericias Tecnológicas</title>
     <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#3498db">
     <style>
-        :root { --bg: #0a0a0a; --card: #161616; --text: #f0f0f0; --accent: #3498db; --action: #f1c40f; --danger: #e74c3c; --success: #2ecc71; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); color: var(--text); padding: 10px; margin: 0; display: flex; justify-content: center; }
-        #app { max-width: 480px; width: 100%; background: var(--card); padding: 20px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
+        :root { --bg: #121212; --card: #1e1e1e; --text: #e0e0e0; --accent: #3498db; --danger: #e74c3c; --success: #2ecc71; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); display: flex; justify-content: center; padding: 15px; margin: 0; }
+        #app { max-width: 500px; width: 100%; background: var(--card); padding: 20px; border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.6); margin-top: 10px; }
         
-        .header { display: flex; flex-direction: column; align-items: center; border-bottom: 2px solid var(--accent); margin-bottom: 20px; padding-bottom: 15px; }
+        .header { display: flex; flex-direction: column; align-items: center; border-bottom: 1px solid #333; margin-bottom: 20px; padding-bottom: 15px; }
         .escudo-main { width: 80px; height: auto; margin-bottom: 10px; filter: drop-shadow(0 0 5px var(--accent)); }
-        .header small { color: var(--accent); font-weight: 800; text-transform: uppercase; letter-spacing: 1px; font-size: 0.75rem; text-align: center; }
+        .header small { color: var(--accent); font-weight: bold; letter-spacing: 1px; text-transform: uppercase; font-size: 0.75rem; text-align: center; }
         
-        .box-accion { background: #2c2500; border-left: 5px solid var(--action); color: var(--action); padding: 15px; border-radius: 8px; margin: 15px 0; font-weight: bold; line-height: 1.4; }
-        .box-danger { background: #3d0a0a; border-left: 5px solid var(--danger); color: #ffb3b3; padding: 15px; border-radius: 8px; margin: 15px 0; font-weight: bold; line-height: 1.4; }
+        h2 { font-size: 1.1rem; margin: 15px 0; line-height: 1.4; color: var(--accent); }
+        .instruccion-box { background: #263238; padding: 15px; border-left: 4px solid var(--accent); border-radius: 4px; margin: 15px 0; font-size: 0.95rem; line-height: 1.5; }
+        .danger { border-left-color: var(--danger); background: #3d1c1c; color: #ffbcbc; font-weight: bold; }
         
-        input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #333; background: #222; color: white; box-sizing: border-box; }
-        .btn { display: block; width: 100%; padding: 16px; margin-top: 15px; border: none; border-radius: 10px; background: var(--accent); color: white; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        .btn:active { transform: scale(0.98); }
-        .btn-action { background: var(--action); color: black; }
-        #log-acta { background: #000; color: var(--success); font-family: 'Courier New', monospace; padding: 15px; border-radius: 8px; margin-top: 20px; font-size: 0.85rem; border: 1px solid #1a1a1a; white-space: pre-wrap; }
+        input { width: 100%; padding: 12px; margin-top: 10px; border-radius: 6px; border: 1px solid #444; background: #2a2a2a; color: white; box-sizing: border-box; }
+        .btn { display: block; width: 100%; padding: 14px; margin: 10px 0; border: none; border-radius: 8px; background: var(--accent); color: white; font-size: 1rem; font-weight: bold; cursor: pointer; transition: 0.2s; -webkit-tap-highlight-color: transparent; }
+        .btn:active { transform: scale(0.98); opacity: 0.9; }
+        .btn-secondary { background: #444; margin-top: 5px; }
+        
+        #log-acta { background: #000; color: var(--success); font-family: 'Courier New', monospace; font-size: 0.85rem; padding: 15px; border-radius: 6px; white-space: pre-wrap; margin-top: 15px; border: 1px solid #222; border-left: 3px solid var(--success); }
     </style>
 </head>
 <body>
 
 <div id="app">
     <div class="header">
-        <img src="icon-192.png" alt="Escudo DAPT" class="escudo-main">
+        <img src="icon-192.png" alt="DAPT" class="escudo-main">
         <small>División Análisis y Pericias Tecnológicas</small>
     </div>
-    <h2 id="titulo" style="font-size: 1.1rem; color: var(--accent);"></h2>
+    <h2 id="titulo">Cargando...</h2>
     <div id="contenido"></div>
     <div id="opciones"></div>
 </div>
 
 <script>
-let datosGral = {}; 
-let datosEquipo = {}; 
+let datos = {};
 let nodoActual = "inicio_legal";
 
 const protocolo = {
+    /* --- PANTALLA INICIAL: DATOS DE LA CAUSA --- */
     "inicio_legal": {
-        "texto": "DATOS DE LA CAUSA",
+        "texto": "Datos de la Causa (Anexo 2):",
         "campos": ["Carátula", "Sumario Nro", "Juzgado/Fiscalía", "Lugar de Recolección", "Responsable"],
         "sig": "inicio"
     },
 
     "inicio": {
-        "texto": "Seleccione el tipo de dispositivo:",
+        "texto": "Tipo de dispositivo a secuestrar:",
         "opciones": [
-            { "label": "📱 Móvil / Celular", "sig": "mov_sim_check" },
-            { "label": "🖥️ PC de Escritorio", "sig": "pc_estado" },
-            { "label": "💻 Laptop / Notebook", "sig": "lap_estado" },
-            { "label": "📹 Imagen y Video", "sig": "vid_id" }
+            { "label": "📱 Móvil / Celular", "sig": "mov_sim" },
+            { "label": "🖥️ PC de Escritorio", "sig": "pc_on" },
+            { "label": "💻 Laptop", "sig": "lap_on" },
+            { "label": "📹 Imagen y Video (DVR)", "sig": "vid_id" }
         ]
     },
 
-    /* --- FLUJO MÓVILES --- */
-    "mov_sim_check": {
+    /* MÓVILES [cite: 522] */
+    "mov_sim": {
         "texto": "¿Existe tarjeta SIM?",
         "opciones": [
             { "label": "SÍ", "sig": "mov_sim_multi" },
-            { "label": "NO", "sig": "mov_estado", "log": () => datosEquipo.sim = "No posee" }
+            { "label": "NO", "sig": "mov_on", "log": () => datos.sim = "No posee" }
         ]
     },
     "mov_sim_multi": {
-        "texto": "¿Existe más de una SIM?",
+        "texto": "Registro de SIM:",
+        "campos": ["ICCID / Slot"],
+        "sig": "mov_on"
+    },
+    "mov_on": {
+        "texto": "¿Equipo encendido?",
         "opciones": [
-            { "label": "SÍ", "sig": "mov_sim_inst_multi" },
-            { "label": "NO", "sig": "mov_sim_inst_unica" }
+            { "label": "SÍ (AFU)", "sig": "mov_on_act", "log": () => datos.estado = "CALIENTE-AFU" },
+            { "label": "NO (BFU)", "sig": "mov_reg", "log": () => datos.estado = "FRÍO-BFU" }
         ]
     },
-    "mov_sim_inst_multi": {
-        "tipo": "instruccion",
-        "texto": "ACCIÓN: Extraer, identificar y registrar ICCID y SLOT de cada una. Adherir con cinta al equipo.",
-        "campos": ["ICCID SIM 1", "Slot 1", "ICCID SIM 2", "Slot 2"],
-        "sig": "mov_estado"
-    },
-    "mov_sim_inst_unica": {
-        "tipo": "instruccion",
-        "texto": "ACCIÓN: Extraer SIM y registrar ICCID. Adherir con cinta al equipo.",
-        "campos": ["ICCID SIM"],
-        "sig": "mov_estado"
-    },
-    "mov_estado": {
-        "texto": "¿Dispositivo encendido?",
-        "opciones": [
-            { "label": "SÍ (AFU)", "sig": "mov_on_inst", "log": () => datosEquipo.estado = "CALIENTE-AFU" },
-            { "label": "NO (BFU)", "sig": "mov_reg", "log": () => datosEquipo.estado = "FRÍO-BFU" }
-        ]
-    },
-    "mov_on_inst": {
+    "mov_on_act": {
         "tipo": "instruccion", "danger": true,
-        "texto": "ORDEN CRÍTICA: ¡NO APAGAR!\n1. Activar MODO AVIÓN.\n2. Desactivar WIFI.",
+        "texto": "¡ACCIÓN CRÍTICA! NO APAGAR. Activar MODO AVIÓN y desactivar WIFI inmediatamente[cite: 158, 166].",
         "sig": "mov_reg"
     },
     "mov_reg": {
-        "texto": "Identificación Física (Visible):",
-        "campos": ["Marca", "Modelo Técnico", "IMEI", "Nro Serie"],
-        "sig": "mov_memoria_check"
+        "texto": "Datos del dispositivo:",
+        "campos": ["Marca", "Modelo", "IMEI", "Nro Serie"],
+        "sig": "mov_mem"
     },
-    "mov_memoria_check": {
+    "mov_mem": {
         "texto": "¿Posee tarjeta de memoria?",
         "opciones": [
-            { "label": "SÍ", "sig": "mov_memoria_reg" },
-            { "label": "NO", "sig": "mov_final_Faraday", "log": () => datosEquipo.memoria = "No posee" }
+            { "label": "SÍ", "sig": "mov_mem_reg" },
+            { "label": "NO", "sig": "mov_faraday", "log": () => datos.memoria = "No posee" }
         ]
     },
-    "mov_memoria_reg": {
-        "texto": "Registro de Memoria:",
+    "mov_mem_reg": {
+        "texto": "Datos de memoria:",
         "campos": ["Tipo / Capacidad / Inscripción"],
-        "sig": "mov_final_Faraday"
+        "sig": "mov_faraday"
     },
-    "mov_final_Faraday": {
+    "mov_faraday": {
         "tipo": "instruccion",
-        "texto": "ACCIÓN: Aislamiento electromagnético (Bolsa Faraday o 5 vueltas papel aluminio).",
-        "sig": "final_universal"
+        "texto": "Colocar en Bolsa Faraday o 5 vueltas de papel aluminio[cite: 186].",
+        "sig": "final"
     },
 
-    /* --- FLUJO PC ESCRITORIO --- */
-    "pc_estado": {
-        "texto": "¿PC encendida?",
+    /* PC ESCRITORIO [cite: 569] */
+    "pc_on": {
+        "texto": "¿Equipo encendido?",
         "opciones": [
-            { "label": "SÍ", "sig": "pc_aislar", "log": () => datosEquipo.estado = "ENCENDIDO" },
-            { "label": "NO", "sig": "pc_desconectar", "log": () => datosEquipo.estado = "APAGADO" }
+            { "label": "SÍ", "sig": "pc_aislar", "log": () => datos.estado = "Encendido" },
+            { "label": "NO", "sig": "final", "log": () => datos.estado = "Apagado" }
         ]
     },
     "pc_aislar": {
-        "tipo": "instruccion", "danger": true,
-        "texto": "ACCIÓN: Aislar de redes (Desconectar cable LAN, desactivar Wifi y Bluetooth).",
-        "sig": "pc_monitor"
+        "tipo": "instruccion",
+        "texto": "Aislar equipo de redes (Cable LAN, Wifi, Bluetooth).",
+        "sig": "pc_mon"
     },
-    "pc_monitor": {
+    "pc_mon": {
         "texto": "¿Monitor encendido?",
         "opciones": [
-            { "label": "SÍ", "sig": "pc_protector" },
-            { "label": "NO", "sig": "pc_encender_mon" }
+            { "label": "SÍ", "sig": "pc_prot" },
+            { "label": "NO", "sig": "pc_mon_on" }
         ]
     },
-    "pc_encender_mon": { "tipo": "instruccion", "texto": "ACCIÓN: Encender monitor.", "sig": "pc_protector" },
-    "pc_protector": {
-        "texto": "¿Protector de pantalla activo?",
+    "pc_mon_on": { "tipo": "instruccion", "texto": "Encender monitor.", "sig": "pc_prot" },
+    "pc_prot": {
+        "texto": "¿Protector de pantalla activado?",
         "opciones": [
             { "label": "SÍ", "sig": "pc_mouse" },
-            { "label": "NO", "sig": "pc_documentar" }
+            { "label": "NO", "sig": "pc_doc" }
         ]
     },
     "pc_mouse": {
         "tipo": "instruccion", "danger": true,
-        "texto": "¡ADVERTENCIA!\nMover mouse suavemente. NO HACER CLICK.",
-        "sig": "pc_documentar"
+        "texto": "ADVERTENCIA: Mover mouse suavemente. NO HACER CLICK[cite: 230].",
+        "sig": "pc_doc"
     },
-    "pc_documentar": {
-        "texto": "Registro de Pantalla:",
+    "pc_doc": {
+        "texto": "Información del sistema:",
         "campos": ["Usuario Visible", "Fecha/Hora Sistema"],
-        "sig": "pc_desconectar"
+        "sig": "pc_hash"
     },
-    "pc_desconectar": {
-        "tipo": "instruccion",
-        "texto": "ACCIÓN: Desconectar cable de alimentación.",
-        "sig": "final_universal"
+    "pc_hash": {
+        "texto": "Registro de Hash (si aplica):",
+        "campos": ["HASH Valor 1", "HASH Valor 2"],
+        "sig": "final"
     },
 
-    /* --- FLUJO LAPTOP (CORREGIDO)  --- */
-    "lap_estado": {
-        "texto": "¿Laptop encendida?",
-        "opciones": [
-            { "label": "SÍ", "sig": "lap_aislar", "log": () => datosEquipo.estado = "ENCENDIDO" },
-            { "label": "NO", "sig": "lap_reg", "log": () => datosEquipo.estado = "APAGADO" }
-        ]
-    },
-    "lap_aislar": {
-        "tipo": "instruccion", "danger": true,
-        "texto": "ACCIÓN: Aislar de redes inmediatamente.",
-        "sig": "lap_protector"
-    },
-    "lap_protector": {
-        "texto": "¿Protector de pantalla activo?",
-        "opciones": [
-            { "label": "SÍ", "sig": "lap_mouse" },
-            { "label": "NO", "sig": "lap_documentar" }
-        ]
-    },
-    "lap_mouse": {
-        "tipo": "instruccion", "danger": true,
-        "texto": "¡ADVERTENCIA!\nMover mouse suavemente. NO HACER CLICK.",
-        "sig": "lap_documentar"
-    },
-    "lap_documentar": {
-        "texto": "Registro de Pantalla:",
-        "campos": ["Usuario Visible", "Fecha/Hora Sistema"],
-        "sig": "lap_apagar"
-    },
-    "lap_apagar": {
-        "tipo": "instruccion",
-        "texto": "ACCIÓN: Desenchufar y extraer batería. Si no es posible, apagar forzado (POWER 10 seg).",
-        "sig": "lap_reg"
-    },
-    "lap_reg": {
-        "texto": "Identificación Física:",
-        "campos": ["Marca", "Modelo", "Nro Serie", "Estado"],
-        "sig": "final_universal"
-    },
-
-    /* --- FLUJO VIDEO --- */
-    "vid_id": {
-        "texto": "Tipo de Sistema y Almacenamiento:",
-        "campos": ["Sistema", "Almacenamiento (Local/Remoto)"],
-        "sig": "vid_estado"
-    },
-    "vid_estado": {
+    /* LAPTOP [cite: 600] */
+    "lap_on": {
         "texto": "¿Equipo encendido?",
         "opciones": [
-            { "label": "SÍ", "sig": "vid_on_accion" },
-            { "label": "NO", "sig": "vid_off_accion" }
+            { "label": "SÍ", "sig": "lap_aislar", "log": () => datos.estado = "Encendido" },
+            { "label": "NO", "sig": "lap_reg", "log": () => datos.estado = "Apagado" }
         ]
     },
-    "vid_on_accion": {
-        "tipo": "instruccion",
-        "texto": "Solo bajo autorización judicial y con especialista: Volcado 'en caliente'. Si no, proceda a desconectar.",
-        "sig": "vid_off_accion"
+    "lap_aislar": { "tipo": "instruccion", "texto": "Aislar de redes (Wifi, LAN).", "sig": "lap_prot" },
+    "lap_prot": {
+        "texto": "¿Protector activado?",
+        "opciones": [
+            { "label": "SÍ", "sig": "lap_mouse" },
+            { "label": "NO", "sig": "lap_doc" }
+        ]
     },
-    "vid_off_accion": {
-        "tipo": "instruccion",
-        "texto": "ACCIÓN: Desconectar alimentación. Fajar todos los puertos y tornillos de acceso a discos.",
-        "sig": "vid_reg"
+    "lap_mouse": { "tipo": "instruccion", "danger": true, "texto": "Mover mouse suavemente. NO HACER CLICK[cite: 264].", "sig": "lap_doc" },
+    "lap_doc": { "texto": "Datos de pantalla:", "campos": ["Usuario", "Hora Sistema"], "sig": "lap_apagar" },
+    "lap_apagar": { 
+        "tipo": "instruccion", 
+        "texto": "Desconectar alimentación. Extraer batería. Si no es posible, apagar forzado (10 seg POWER) [cite: 268-269].", 
+        "sig": "lap_reg" 
     },
-    "vid_reg": {
-        "texto": "Identificación de Video:",
-        "campos": ["Marca", "Modelo", "Nro Serie"],
-        "sig": "final_universal"
-    },
+    "lap_reg": { "texto": "Identificación Física:", "campos": ["Marca", "Modelo", "Nro Serie"], "sig": "final" },
 
-    "final_universal": {
+    /* VIDEO [cite: 633] */
+    "vid_id": {
+        "texto": "Identificación de Video:",
+        "campos": ["Tipo Sistema", "Ubicación Almacenamiento"],
+        "sig": "vid_on"
+    },
+    "vid_on": {
+        "texto": "¿Equipo encendido?",
+        "opciones": [
+            { "label": "SÍ", "sig": "vid_volc" },
+            { "label": "NO", "sig": "vid_desc" }
+        ]
+    },
+    "vid_volc": { "tipo": "instruccion", "texto": "Solo con autorización: Volcado en caliente por especialista.", "sig": "vid_desc" },
+    "vid_desc": { "tipo": "instruccion", "texto": "Desconectar alimentación.", "sig": "vid_reg" },
+    "vid_reg": { "texto": "Datos equipo:", "campos": ["Marca", "Modelo", "Nro Serie"], "sig": "final" },
+
+    "final": {
         "tipo": "final",
-        "texto": "PROCEDIMIENTO FINALIZADO"
+        "texto": "Procedimiento concluido exitosamente."
     }
 };
 
@@ -252,50 +213,57 @@ function render() {
             const i = document.createElement('input');
             i.placeholder = c; i.id = `f_${c}`; cont.appendChild(i);
         });
-        const b = document.createElement('button'); b.className = "btn btn-action"; b.innerText = "Registrar y Continuar";
+        const b = document.createElement('button'); b.className = "btn"; b.innerText = "Siguiente";
         b.onclick = () => {
-            node.campos.forEach(c => {
-                const val = document.getElementById(`f_${c}`).value;
-                if(nodoActual === "inicio_legal") datosGral[c] = val;
-                else datosEquipo[c] = val;
-            });
+            node.campos.forEach(c => datos[c] = document.getElementById(`f_${c}`).value);
             irA(node.sig);
         };
         opts.appendChild(b);
     } else if (node.tipo === "instruccion") {
-        cont.innerHTML = `<div class="${node.danger ? 'box-danger' : 'box-accion'}">${node.texto.replace(/\n/g, '<br>')}</div>`;
-        const b = document.createElement('button'); b.className = "btn"; b.innerText = "ORDEN CUMPLIDA";
-        b.onclick = () => irA(node.sig);
-        opts.appendChild(b);
+        cont.innerHTML = `<div class="instruccion-box ${node.danger ? 'danger' : ''}">${node.texto}</div>`;
+        const b = document.createElement('button'); b.className = "btn"; b.innerText = "Entendido";
+        b.onclick = () => irA(node.sig); opts.appendChild(b);
     } else if (node.tipo === "final") {
-        let res = `*** FORMULARIO DE CADENA DE CUSTODIA ***\n`;
-        res += `FECHA: ${new Date().toLocaleDateString()} | HORA: ${new Date().toLocaleTimeString()}\n`;
-        res += `CARÁTULA: ${datosGral["Carátula"] || "-"}\nSUMARIO: ${datosGral["Sumario Nro"] || "-"}\n`;
-        res += `JUZGADO: ${datosGral["Juzgado/Fiscalía"] || "-"}\nLUGAR: ${datosGral["Lugar de Recolección"] || "-"}\n`;
-        res += `------------------------------------------------\n`;
-        res += `IDENTIFICACIÓN DEL MATERIAL:\n`;
-        for (let k in datosEquipo) res += `- ${k.toUpperCase()}: ${datosEquipo[k]}\n`;
-        res += `------------------------------------------------\n`;
-        res += `RESPONSABLE: ${datosGral["Responsable"] || "-"}\n`;
+        let res = "FORMULARIO DE CADENA DE CUSTODIA (ANEXO 2)\n";
+        res += "-------------------------------------------\n";
+        for (let k in datos) res += `${k.toUpperCase()}: ${datos[k]}\n`;
+        res += "-------------------------------------------\n";
+        res += "FECHA GENERACIÓN: " + new Date().toLocaleString();
         
         cont.innerHTML = `<div id="log-acta">${res}</div>`;
-        const b = document.createElement('button'); b.className = "btn"; b.innerText = "COPIAR RESUMEN";
-        b.onclick = () => { navigator.clipboard.writeText(res); alert("Copiado."); };
+        const b = document.createElement('button'); b.className = "btn"; b.innerText = "Copiar Resumen";
+        b.onclick = () => { 
+            navigator.clipboard.writeText(res); alert("Copiado al portapapeles."); 
+        };
         opts.appendChild(b);
-        const br = document.createElement('button'); br.className = "btn-secondary btn"; br.innerText = "NUEVO SECUESTRO";
-        br.onclick = () => { datosEquipo = {}; nodoActual = "inicio"; render(); };
+        
+        const br = document.createElement('button'); br.className = "btn btn-secondary"; br.innerText = "Nuevo Secuestro (Misma Causa)";
+        br.onclick = () => { 
+            // Limpiamos solo los datos del dispositivo para mantener los de la causa
+            const causa = ["Carátula", "Sumario Nro", "Juzgado/Fiscalía", "Lugar de Recolección", "Responsable"];
+            let nuevosDatos = {};
+            causa.forEach(key => nuevosDatos[key] = datos[key]);
+            datos = nuevosDatos;
+            nodoActual = "inicio"; 
+            render(); 
+        };
         opts.appendChild(br);
     } else {
         node.opciones.forEach(o => {
             const b = document.createElement('button'); b.className = "btn"; b.innerText = o.label;
-            b.onclick = () => { if(o.log) o.log(); irA(o.sig); };
-            opts.appendChild(b);
+            b.onclick = () => { if(o.log) o.log(); irA(o.sig); }; opts.appendChild(b);
         });
     }
 }
 
 function irA(s) { nodoActual = s; render(); }
+
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js'); });
+}
+
 render();
 </script>
 </body>
 </html>
+
