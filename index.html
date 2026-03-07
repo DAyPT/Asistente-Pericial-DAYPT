@@ -108,6 +108,55 @@ const protocolo = {
         "campos": ["Tipo Memoria", "Capacidad", "Inscripción"],
         "sig": "final_universal"
     },
+    /* --- LAPTOP / NOTEBOOK --- */
+    "lap_estado": {
+        "texto": "¿Equipo encendido?",
+        "opciones": [
+            { "label": "SÍ", "sig": "lap_aislar", "log": () => datosEquipo.estado = "ENCENDIDO" },
+            { "label": "NO", "sig": "lap_off_accion", "log": () => datosEquipo.estado = "APAGADO" }
+        ]
+    },
+    "lap_aislar": {
+        "tipo": "instruccion", "danger": true,
+        "texto": "ACCIÓN: De ser necesario, aislar el equipo de las redes y conexiones entrantes/salientes (Cable de red, Wifi, Bluetooth).",
+        "sig": "lap_prot"
+    },
+    "lap_prot": {
+        "texto": "¿Protector de Pantalla Activado?",
+        "opciones": [
+            { "label": "SÍ", "sig": "lap_mouse" },
+            { "label": "NO", "sig": "lap_doc" }
+        ]
+    },
+    "lap_mouse": {
+        "tipo": "instruccion", "danger": true,
+        "texto": "ADVERTENCIA: Mover mouse (no hacer click).",
+        "sig": "lap_doc"
+    },
+    "lap_doc": {
+        "texto": "Fotografiar pantalla y documentar información visible:",
+        "campos": ["Usuario Visible", "Fecha y Hora Sistema"],
+        "sig": "lap_adquisicion"
+    },
+    "lap_adquisicion": {
+        "tipo": "instruccion",
+        "texto": "ACCIÓN ESPECIALISTA: En casos autorizados, proceder a adquisición de memoria RAM, imagen forense o descarga de nube. Plasmar 2 valores de HASH en el acta.",
+        "sig": "lap_off_accion"
+    },
+    "lap_off_accion": {
+        "tipo": "instruccion",
+        "texto": "ACCIÓN: Desconectar cables de alimentación y, de ser posible, extraer batería. De no ser posible, apagar el equipo presionando el botón de encendido por DIEZ (10) segundos.",
+        "sig": "lap_reg"
+    },
+    "lap_reg": {
+        "texto": "Identificar y registrar (visible):",
+        "campos": ["Marca", "Modelo", "Número de serie", "Estado de conservación", "Otras características (stickers, rupturas)"],
+        "sig": "lap_embalaje"
+    },
+    "lap_embalaje": {
+        "tipo": "final",
+        "texto": "Proceder al Embalaje, rotulado y preservación. Fajar/clausurar puertos y accesos a discos. Incorporar firmas de intervinientes en cierres y pliegues del contenedor."
+    },
 
     /* --- PC ESCRITORIO --- */
     "pc_estado": {
@@ -240,4 +289,5 @@ render();
 </script>
 </body>
 </html>
+
 
