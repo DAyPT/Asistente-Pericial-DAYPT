@@ -1,7 +1,16 @@
-const CACHE = 'dapt-v1';
+const CACHE = 'dapt-v2'; 
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(['./', './index.html', './manifest.json'])));
+  e.waitUntil(
+    caches.open(CACHE).then(c => c.addAll([
+      './', 
+      './index.html', 
+      './manifest.json',
+      './icon-192.png',
+      './icon-512.jpg'
+    ]))
+  );
 });
+
 self.addEventListener('fetch', e => {
   e.respondWith(caches.match(e.request).then(r => r || fetch(e.request)));
 });
