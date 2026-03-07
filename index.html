@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Asistente DAPT - MPF 2023</title>
+    <title>Asistente DAPT - Pericia Oficial</title>
     <link rel="manifest" href="manifest.json">
     <style>
         :root { --bg: #0a0a0a; --card: #161616; --text: #f0f0f0; --accent: #3498db; --action: #f1c40f; --danger: #e74c3c; --success: #2ecc71; }
@@ -28,7 +28,7 @@
 <div id="app">
     <div class="header">
         <img src="icon-192.png" alt="Escudo DAPT" class="escudo-main">
-        <small>División Análisis y Pericias Tecnológicas<br>PROTOCOLO MPF 2023</small>
+        <small>División Análisis y Pericias Tecnológicas</small>
     </div>
     <h2 id="titulo" style="font-size: 1.1rem; color: var(--accent);"></h2>
     <div id="contenido"></div>
@@ -36,14 +36,13 @@
 </div>
 
 <script>
-let datosGral = {}; // Para Anexo 2
-let datosEquipo = {}; // Para el dispositivo
+let datosGral = {}; 
+let datosEquipo = {}; 
 let nodoActual = "inicio_legal";
 
 const protocolo = {
-    /* --- DATOS DE LA CAUSA (ANEXO 2) [cite: 428, 501-510] --- */
     "inicio_legal": {
-        "texto": "DATOS DE LA CAUSA (ANEXO 2)",
+        "texto": "DATOS DE LA CAUSA",
         "campos": ["Carátula", "Sumario Nro", "Juzgado/Fiscalía", "Lugar de Recolección", "Responsable (Nombre/Legajo)"],
         "sig": "inicio"
     },
@@ -58,7 +57,7 @@ const protocolo = {
         ]
     },
 
-    /* --- FLUJO LAPTOP (CORREGIDO) [cite: 261-277, 600-629] --- */
+    /* --- FLUJO LAPTOP --- */
     "lap_estado": {
         "texto": "¿La Laptop se encuentra encendida?",
         "opciones": [
@@ -68,7 +67,7 @@ const protocolo = {
     },
     "lap_aislar": {
         "tipo": "instruccion", "danger": true,
-        "texto": "ACCIÓN: Aislar de redes (Desconectar cable LAN, desactivar Wifi y Bluetooth)[cite: 262].",
+        "texto": "ACCIÓN: Aislar de redes (Desconectar cable LAN, desactivar Wifi y Bluetooth).",
         "sig": "lap_monitor"
     },
     "lap_monitor": {
@@ -80,18 +79,18 @@ const protocolo = {
     },
     "lap_mouse": {
         "tipo": "instruccion", "danger": true,
-        "texto": "ACCIÓN: Desplazar ligeramente el mouse. ¡NO TOCAR NINGÚN BOTÓN (NO CLICK)![cite: 264].",
+        "texto": "ACCIÓN: Desplazar ligeramente el mouse. ¡NO TOCAR NINGÚN BOTÓN (NO CLICK)!.",
         "sig": "lap_documentar"
     },
     "lap_documentar": {
         "texto": "Documentación de Pantalla:",
         "campos": ["Usuario Visible", "Fecha/Hora del Sistema"],
-        "instruccion": "Fotografiar pantalla y documentar información visible[cite: 263].",
+        "instruccion": "Fotografiar pantalla y documentar información visible.",
         "sig": "lap_apagar"
     },
     "lap_apagar": {
         "tipo": "instruccion",
-        "texto": "ACCIÓN: Desenchufar energía y extraer batería. Si no es posible, presione botón POWER por 10 segundos [cite: 268-269].",
+        "texto": "ACCIÓN: Desenchufar energía y extraer batería. Si no es posible, apagar presionando botón de encendido por 10 segundos.",
         "sig": "lap_identificar"
     },
     "lap_identificar": {
@@ -101,19 +100,47 @@ const protocolo = {
     },
 
     /* --- OTROS FLUJOS --- */
-    "mov_estado": { "texto": "¿Estado?", "opciones": [{ "label": "ON (AFU)", "sig": "mov_on" }, { "label": "OFF (BFU)", "sig": "mov_reg" }] },
-    "mov_on": { "tipo": "instruccion", "danger": true, "texto": "ACCIÓN: Modo Avión. No apagar[cite: 166].", "sig": "mov_reg" },
-    "mov_reg": { "texto": "Datos Móvil:", "campos": ["Marca", "Modelo", "IMEI", "Nro Serie"], "sig": "final_universal" },
+    "mov_estado": { 
+        "texto": "¿Estado?", 
+        "opciones": [
+            { "label": "Encendido (AFU)", "sig": "mov_on", "log": () => datosEquipo.estado = "ENCENDIDO (AFU)" }, 
+            { "label": "Apagado (BFU)", "sig": "mov_reg", "log": () => datosEquipo.estado = "APAGADO (BFU)" }
+        ] 
+    },
+    "mov_on": { 
+        "tipo": "instruccion", "danger": true, 
+        "texto": "ACCIÓN: Activar Modo Avión. No apagar el equipo.", 
+        "sig": "mov_reg" 
+    },
+    "mov_reg": { 
+        "texto": "Datos del Dispositivo:", 
+        "campos": ["Marca", "Modelo", "IMEI", "Nro Serie"], 
+        "sig": "final_universal" 
+    },
     
-    "pc_estado": { "texto": "¿PC Encendida?", "opciones": [{ "label": "SÍ", "sig": "pc_aislar" }, { "label": "NO", "sig": "final_universal" }] },
-    "pc_aislar": { "tipo": "instruccion", "texto": "ACCIÓN: Aislar redes y fotografiar pantalla [cite: 228-229].", "sig": "final_universal" },
+    "pc_estado": { 
+        "texto": "¿PC Encendida?", 
+        "opciones": [
+            { "label": "SÍ", "sig": "pc_aislar", "log": () => datosEquipo.estado = "ENCENDIDO (AFU)" }, 
+            { "label": "NO", "sig": "final_universal", "log": () => datosEquipo.estado = "APAGADO (BFU)" }
+        ] 
+    },
+    "pc_aislar": { 
+        "tipo": "instruccion", 
+        "texto": "ACCIÓN: Aislar redes y fotografiar pantalla.", 
+        "sig": "final_universal" 
+    },
 
-    "vid_id": { "texto": "Identificación Video:", "campos": ["Tipo Sistema", "Almacenamiento (Local/Remoto)"], "sig": "final_universal" },
+    "vid_id": { 
+        "texto": "Identificación de Video:", 
+        "campos": ["Tipo Sistema", "Almacenamiento (Local/Remoto)"], 
+        "sig": "final_universal" 
+    },
 
-    /* --- GENERADOR DE ANEXO 2 --- */
+    /* --- GENERADOR DE CADENA DE CUSTODIA --- */
     "final_universal": {
         "tipo": "final",
-        "texto": "PROCEDIMIENTO FINALIZADO: Embalaje, rotulado y faja de seguridad [cite: 272-273]."
+        "texto": "PROCEDIMIENTO FINALIZADO: Realizar embalaje, rotulado y faja de seguridad."
     }
 };
 
@@ -145,7 +172,7 @@ function render() {
         b.onclick = () => irA(node.sig);
         opts.appendChild(b);
     } else if (node.tipo === "final") {
-        let planilla = `*** FORMULARIO DE CADENA DE CUSTODIA (ANEXO 2) ***\n`;
+        let planilla = `*** FORMULARIO DE CADENA DE CUSTODIA ***\n`;
         planilla += `FECHA: ${new Date().toLocaleDateString()} | HORA: ${new Date().toLocaleTimeString()}\n`;
         planilla += `CARÁTULA: ${datosGral["Carátula"] || "-"}\nSUMARIO: ${datosGral["Sumario Nro"] || "-"}\n`;
         planilla += `JUZGADO/FISCALÍA: ${datosGral["Juzgado/Fiscalía"] || "-"}\n`;
@@ -155,7 +182,7 @@ function render() {
         for (let k in datosEquipo) planilla += `- ${k.toUpperCase()}: ${datosEquipo[k]}\n`;
         planilla += `------------------------------------------------\n`;
         planilla += `RESPONSABLE: ${datosGral["Responsable (Nombre/Legajo)"] || "-"}\n`;
-        planilla += `OBS: Preservado según Protocolo MPF 2023.`;
+        planilla += `OBS: El material fue preservado según protocolos vigentes.`;
 
         cont.innerHTML = `<div id="log-acta">${planilla}</div>`;
         const b = document.createElement('button'); b.className = "btn"; b.innerText = "COPIAR PARA EL ACTA";
