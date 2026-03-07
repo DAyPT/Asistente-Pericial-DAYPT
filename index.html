@@ -14,11 +14,12 @@
         .escudo-main { width: 80px; height: auto; margin-bottom: 10px; filter: drop-shadow(0 0 5px var(--accent)); }
         .header small { color: var(--accent); font-weight: 800; text-transform: uppercase; letter-spacing: 1px; font-size: 0.75rem; text-align: center; }
         
-        .box-accion { background: #2c2500; border-left: 5px solid var(--action); color: var(--action); padding: 15px; border-radius: 8px; margin: 15px 0; font-weight: bold; }
-        .box-danger { background: #3d0a0a; border-left: 5px solid var(--danger); color: #ffb3b3; padding: 15px; border-radius: 8px; margin: 15px 0; font-weight: bold; }
+        .box-accion { background: #2c2500; border-left: 5px solid var(--action); color: var(--action); padding: 15px; border-radius: 8px; margin: 15px 0; font-weight: bold; line-height: 1.4; }
+        .box-danger { background: #3d0a0a; border-left: 5px solid var(--danger); color: #ffb3b3; padding: 15px; border-radius: 8px; margin: 15px 0; font-weight: bold; line-height: 1.4; }
         
         input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #333; background: #222; color: white; box-sizing: border-box; }
-        .btn { display: block; width: 100%; padding: 16px; margin-top: 15px; border: none; border-radius: 10px; background: var(--accent); color: white; font-weight: bold; cursor: pointer; }
+        .btn { display: block; width: 100%; padding: 16px; margin-top: 15px; border: none; border-radius: 10px; background: var(--accent); color: white; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .btn:active { transform: scale(0.98); }
         .btn-action { background: var(--action); color: black; }
         #log-acta { background: #000; color: var(--success); font-family: 'Courier New', monospace; padding: 15px; border-radius: 8px; margin-top: 20px; font-size: 0.85rem; border: 1px solid #1a1a1a; white-space: pre-wrap; }
     </style>
@@ -105,7 +106,7 @@ const protocolo = {
         "texto": "¿Posee tarjeta de memoria?",
         "opciones": [
             { "label": "SÍ", "sig": "mov_memoria_reg" },
-            { "label": "NO", "sig": "mov_final_ Faraday", "log": () => datosEquipo.memoria = "No posee" }
+            { "label": "NO", "sig": "mov_final_Faraday", "log": () => datosEquipo.memoria = "No posee" }
         ]
     },
     "mov_memoria_reg": {
@@ -129,7 +130,7 @@ const protocolo = {
     },
     "pc_aislar": {
         "tipo": "instruccion", "danger": true,
-        "texto": "ACCIÓN: Aislar de redes (LAN, Wifi, Bluetooth).",
+        "texto": "ACCIÓN: Aislar de redes (Desconectar cable LAN, desactivar Wifi y Bluetooth).",
         "sig": "pc_monitor"
     },
     "pc_monitor": {
@@ -153,7 +154,7 @@ const protocolo = {
         "sig": "pc_documentar"
     },
     "pc_documentar": {
-        "texto": "Documentación:",
+        "texto": "Registro de Pantalla:",
         "campos": ["Usuario Visible", "Fecha/Hora Sistema"],
         "sig": "pc_desconectar"
     },
@@ -163,7 +164,7 @@ const protocolo = {
         "sig": "final_universal"
     },
 
-    /* --- FLUJO LAPTOP --- */
+    /* --- FLUJO LAPTOP (CORREGIDO)  --- */
     "lap_estado": {
         "texto": "¿Laptop encendida?",
         "opciones": [
@@ -173,7 +174,7 @@ const protocolo = {
     },
     "lap_aislar": {
         "tipo": "instruccion", "danger": true,
-        "texto": "ACCIÓN: Aislar de redes (LAN, Wifi, Bluetooth).",
+        "texto": "ACCIÓN: Aislar de redes inmediatamente.",
         "sig": "lap_protector"
     },
     "lap_protector": {
@@ -224,4 +225,77 @@ const protocolo = {
     },
     "vid_off_accion": {
         "tipo": "instruccion",
-        "texto": "ACCIÓN
+        "texto": "ACCIÓN: Desconectar alimentación. Fajar todos los puertos y tornillos de acceso a discos.",
+        "sig": "vid_reg"
+    },
+    "vid_reg": {
+        "texto": "Identificación de Video:",
+        "campos": ["Marca", "Modelo", "Nro Serie"],
+        "sig": "final_universal"
+    },
+
+    "final_universal": {
+        "tipo": "final",
+        "texto": "PROCEDIMIENTO FINALIZADO"
+    }
+};
+
+function render() {
+    const node = protocolo[nodoActual];
+    const cont = document.getElementById('contenido');
+    const opts = document.getElementById('opciones');
+    document.getElementById('titulo').innerText = node.texto;
+    cont.innerHTML = ""; opts.innerHTML = "";
+
+    if (node.campos) {
+        node.campos.forEach(c => {
+            const i = document.createElement('input');
+            i.placeholder = c; i.id = `f_${c}`; cont.appendChild(i);
+        });
+        const b = document.createElement('button'); b.className = "btn btn-action"; b.innerText = "Registrar y Continuar";
+        b.onclick = () => {
+            node.campos.forEach(c => {
+                const val = document.getElementById(`f_${c}`).value;
+                if(nodoActual === "inicio_legal") datosGral[c] = val;
+                else datosEquipo[c] = val;
+            });
+            irA(node.sig);
+        };
+        opts.appendChild(b);
+    } else if (node.tipo === "instruccion") {
+        cont.innerHTML = `<div class="${node.danger ? 'box-danger' : 'box-accion'}">${node.texto.replace(/\n/g, '<br>')}</div>`;
+        const b = document.createElement('button'); b.className = "btn"; b.innerText = "ORDEN CUMPLIDA";
+        b.onclick = () => irA(node.sig);
+        opts.appendChild(b);
+    } else if (node.tipo === "final") {
+        let res = `*** FORMULARIO DE CADENA DE CUSTODIA ***\n`;
+        res += `FECHA: ${new Date().toLocaleDateString()} | HORA: ${new Date().toLocaleTimeString()}\n`;
+        res += `CARÁTULA: ${datosGral["Carátula"] || "-"}\nSUMARIO: ${datosGral["Sumario Nro"] || "-"}\n`;
+        res += `JUZGADO: ${datosGral["Juzgado/Fiscalía"] || "-"}\nLUGAR: ${datosGral["Lugar de Recolección"] || "-"}\n`;
+        res += `------------------------------------------------\n`;
+        res += `IDENTIFICACIÓN DEL MATERIAL:\n`;
+        for (let k in datosEquipo) res += `- ${k.toUpperCase()}: ${datosEquipo[k]}\n`;
+        res += `------------------------------------------------\n`;
+        res += `RESPONSABLE: ${datosGral["Responsable"] || "-"}\n`;
+        
+        cont.innerHTML = `<div id="log-acta">${res}</div>`;
+        const b = document.createElement('button'); b.className = "btn"; b.innerText = "COPIAR RESUMEN";
+        b.onclick = () => { navigator.clipboard.writeText(res); alert("Copiado."); };
+        opts.appendChild(b);
+        const br = document.createElement('button'); br.className = "btn-secondary btn"; br.innerText = "NUEVO SECUESTRO";
+        br.onclick = () => { datosEquipo = {}; nodoActual = "inicio"; render(); };
+        opts.appendChild(br);
+    } else {
+        node.opciones.forEach(o => {
+            const b = document.createElement('button'); b.className = "btn"; b.innerText = o.label;
+            b.onclick = () => { if(o.log) o.log(); irA(o.sig); };
+            opts.appendChild(b);
+        });
+    }
+}
+
+function irA(s) { nodoActual = s; render(); }
+render();
+</script>
+</body>
+</html>
