@@ -46,7 +46,7 @@ let nodoActual = "inicio_legal";
 const protocolo = {
     /* --- PANTALLA INICIAL: DATOS DE LA CAUSA --- */
     "inicio_legal": {
-        "texto": "Datos de la Causa (Anexo 2):",
+        "texto": "Datos de la Causa:",
         "campos": ["Carátula", "Sumario Nro", "Juzgado/Fiscalía", "Lugar de Recolección", "Responsable"],
         "sig": "inicio"
     },
@@ -62,6 +62,11 @@ const protocolo = {
     },
 
     /* MÓVILES [cite: 522] */
+    "mov_on": {
+        "texto": "¿Equipo encendido?",
+        "opciones": [
+            { "label": "SÍ (AFU)", "sig": "mov_on_act", "log": () => datos.estado = "CALIENTE-AFU" },
+            { "label": "NO (BFU)", "sig": "mov_reg", "log": () => datos.estado = "FRÍO-BFU" }
     "mov_sim": {
         "texto": "¿Existe tarjeta SIM?",
         "opciones": [
@@ -74,11 +79,6 @@ const protocolo = {
         "campos": ["ICCID / Slot"],
         "sig": "mov_on"
     },
-    "mov_on": {
-        "texto": "¿Equipo encendido?",
-        "opciones": [
-            { "label": "SÍ (AFU)", "sig": "mov_on_act", "log": () => datos.estado = "CALIENTE-AFU" },
-            { "label": "NO (BFU)", "sig": "mov_reg", "log": () => datos.estado = "FRÍO-BFU" }
         ]
     },
     "mov_on_act": {
@@ -266,4 +266,5 @@ render();
 </script>
 </body>
 </html>
+
 
