@@ -188,7 +188,7 @@ function render() {
         const b = document.createElement('button'); b.className = "btn"; b.innerText = "COPIAR PARA EL ACTA";
         b.onclick = () => { navigator.clipboard.writeText(planilla); alert("Copiado al portapapeles."); };
         opts.appendChild(b);
-        const br = document.createElement('button'); br.className = "btn-secondary btn"; br.innerText = "NUEVO PROCEDIMIENTO";
+        const br = document.createElement('button'); br.className = "btn-secondary btn"; br.innerText = "NUEVO DISPOSITIVO";
         br.onclick = () => { datosEquipo = {}; nodoActual = "inicio"; render(); };
         opts.appendChild(br);
     } else {
@@ -205,3 +205,4 @@ render();
 </script>
 </body>
 </html>
+
