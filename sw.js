@@ -1,4 +1,4 @@
-const CACHE = 'dapt-v2'; 
+const CACHE = 'dapt-v3'; 
 self.addEventListener('install', e => {
   e.waitUntil(
     caches.open(CACHE).then(c => c.addAll([
@@ -14,5 +14,6 @@ self.addEventListener('install', e => {
 self.addEventListener('fetch', e => {
   e.respondWith(caches.match(e.request).then(r => r || fetch(e.request)));
 });
+
 
 
