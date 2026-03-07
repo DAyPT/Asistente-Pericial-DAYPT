@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asistente DAPT - Pericias Tecnológicas</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#3498db">
+    <style>
+        :root { --bg: #121212; --card: #1e1e1e; --text: #e0e0e0; --accent: #3498db; --danger: #e74c3c; --success: #2ecc71; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); display: flex; justify-content: center; padding: 15px; margin: 0; }
+        #app { max-width: 500px; width: 100%; background: var(--card); padding: 20px; border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.6); margin-top: 10px; }
+        .header { text-align: center; border-bottom: 1px solid #333; margin-bottom: 20px; padding-bottom: 10px; }
+        .header small { color: var(--accent); font-weight: bold; letter-spacing: 1px; }
+        h2 { font-size: 1.1rem; margin: 15px 0; line-height: 1.4; }
+        .instruccion-box { background: #263238; padding: 15px; border-left: 4px solid var(--accent); border-radius: 4px; margin: 15px 0; font-size: 0.95rem; }
+        .danger { border-left-color: var(--danger); background: #3d1c1c; color: #ffbcbc; font-weight: bold; }
+        .input-group { margin-bottom: 10px; }
+        input, textarea { width: 100%; padding: 12px; margin-top: 5px; border-radius: 6px; border: 1px solid #444; background: #2a2a2a; color: white; box-sizing: border-box; }
+        .btn { display: block; width: 100%; padding: 14px; margin: 10px 0; border: none; border-radius: 8px; background: var(--accent); color: white; font-size: 1rem; font-weight: bold; cursor: pointer; transition: 0.2s; -webkit-tap-highlight-color: transparent; }
+        .btn:active { transform: scale(0.98); opacity: 0.9; }
+        .btn-secondary { background: #444; }
+        #log-acta { background: #000; color: var(--success); font-family: monospace; font-size: 0.85rem; padding: 12px; border-radius: 6px; white-space: pre-wrap; margin-top: 15px; border: 1px solid #222; }
+    </style>
+</head>
+<body>
+
+<div id="app">
+    <div class="header">
+        <small>DIVISIÓN ANÁLISIS Y PERICIAS TECNOLÓGICAS</small>
+    </div>
+    <h2 id="titulo">Cargando...</h2>
+    <div id="contenido"></div>
+    <div id="opciones"></div>
+</div>
+
+<script>
+let datos = {};
+let nodoActual = "inicio";
+
+const protocolo = {
+    "inicio": {
+        "texto": "Tipo de dispositivo a secuestrar:",
+        "opciones": [
+            { "label": "📱 Móvil / Celular", "sig": "mov_sim" },
+            { "label": "🖥️ PC de Escritorio", "sig": "pc_on" },
+            { "label": "💻 Laptop", "sig": "lap_on" },
+            { "label": "📹 Imagen y Video (DVR)", "sig": "vid_id" }
+        ]
+    },
+    /* MÓVILES */
+    "mov_sim": {
+        "texto": "¿Existe tarjeta SIM?",
+        "opciones": [
+            { "label": "SÍ", "sig": "mov_sim_multi" },
+            { "label": "NO", "sig": "mov_on", "log": () => datos.sim = "No posee" }
+        ]
+    },
+    "mov_sim_multi": {
+        "texto": "Registro de SIM:",
+        "campos": ["ICCID / Slot"],
+        "sig": "mov_on"
+    },
+    "mov_on": {
+        "texto": "¿Equipo encendido?",
+        "opciones": [
+            { "label": "SÍ", "sig": "mov_on_act", "log": () => datos.estado = "Encendido" },
+            { "label": "NO", "sig": "mov_reg", "log": () => datos.estado = "Apagado" }
+        ]
+    },
+    "mov_on_act": {
+        "tipo": "instruccion", "danger": true,
+        "texto": "¡ACCIÓN CRÍTICA! Activar MODO AVIÓN y desactivar WIFI inmediatamente.",
+        "sig": "mov_reg"
+    },
+    "mov_reg": {
+        "texto": "Datos del dispositivo:",
+        "campos": ["Marca", "Modelo", "IMEI", "Nro Serie"],
+        "sig": "mov_mem"
+    },
+    "mov_mem": {
+        "texto": "¿Posee tarjeta de memoria?",
+        "opciones": [
+            { "label": "SÍ", "sig": "mov_mem_reg" },
+            { "label": "NO", "sig": "final" }
+        ]
+    },
+    "mov_mem_reg": {
+        "texto": "Datos de memoria:",
+        "campos": ["Tipo / Capacidad / Inscripción"],
+        "sig": "final"
+    },
+    /* PC ESCRITORIO */
+    "pc_on": {
+        "texto": "¿Equipo encendido?",
+        "opciones": [
+            { "label": "SÍ", "sig": "pc_aislar", "log": () => datos.estado = "Encendido" },
+            { "label": "NO", "sig": "final", "log": () => datos.estado = "Apagado" }
+        ]
+    },
+    "pc_aislar": {
+        "tipo": "instruccion",
+        "texto": "Aislar equipo de redes (Cable de red, Wifi, Bluetooth).",
+        "sig": "pc_mon"
+    },
+    "pc_mon": {
+        "texto": "¿Monitor encendido?",
+        "opciones": [
+            { "label": "SÍ", "sig": "pc_prot" },
+            { "label": "NO", "sig": "pc_mon_on" }
+        ]
+    },
+    "pc_mon_on": { "tipo": "instruccion", "texto": "Encender monitor.", "sig": "pc_doc" },
+    "pc_prot": {
+        "texto": "¿Protector de pantalla activado?",
+        "opciones": [
+            { "label": "SÍ", "sig": "pc_mouse" },
+            { "label": "NO", "sig": "pc_doc" }
+        ]
+    },
+    "pc_mouse": {
+        "tipo": "instruccion", "danger": true,
+        "texto": "ADVERTENCIA: Mover mouse suavemente. NO HACER CLICK.",
+        "sig": "pc_doc"
+    },
+    "pc_doc": {
+        "texto": "Información del sistema:",
+        "campos": ["Usuario Visible", "Fecha/Hora Sistema"],
+        "sig": "pc_hash"
+    },
+    "pc_hash": {
+        "texto": "Registro de Hash (si aplica):",
+        "campos": ["HASH Valor 1", "HASH Valor 2"],
+        "sig": "final"
+    },
+    /* LAPTOP */
+    "lap_on": {
+        "texto": "¿Equipo encendido?",
+        "opciones": [
+            { "label": "SÍ", "sig": "lap_aislar", "log": () => datos.estado = "Encendido" },
+            { "label": "NO", "sig": "lap_reg", "log": () => datos.estado = "Apagado" }
+        ]
+    },
+    "lap_aislar": { "tipo": "instruccion", "texto": "Aislar de redes.", "sig": "lap_prot" },
+    "lap_prot": {
+        "texto": "¿Protector activado?",
+        "opciones": [
+            { "label": "SÍ", "sig": "lap_mouse" },
+            { "label": "NO", "sig": "lap_doc" }
+        ]
+    },
+    "lap_mouse": { "tipo": "instruccion", "danger": true, "texto": "Mover mouse suavemente. NO CLICK.", "sig": "lap_doc" },
+    "lap_doc": { "texto": "Datos de pantalla:", "campos": ["Usuario", "Hora Sistema"], "sig": "lap_apagar" },
+    "lap_apagar": { "tipo": "instruccion", "texto": "Desconectar alimentación. Extraer batería si es posible.", "sig": "lap_reg" },
+    "lap_reg": { "texto": "Identificación:", "campos": ["Marca", "Modelo", "Nro Serie"], "sig": "final" },
+    /* VIDEO */
+    "vid_id": {
+        "texto": "Identificación de Video:",
+        "campos": ["Tipo Sistema", "Ubicación Almacenamiento"],
+        "sig": "vid_on"
+    },
+    "vid_on": {
+        "texto": "¿Equipo encendido?",
+        "opciones": [
+            { "label": "SÍ", "sig": "vid_volc" },
+            { "label": "NO", "sig": "vid_desc" }
+        ]
+    },
+    "vid_volc": { "tipo": "instruccion", "texto": "Solo con autorización: Volcado en caliente por especialista.", "sig": "vid_desc" },
+    "vid_desc": { "tipo": "instruccion", "texto": "Desconectar alimentación.", "sig": "vid_reg" },
+    "vid_reg": { "texto": "Datos equipo:", "campos": ["Marca", "Modelo", "Nro Serie"], "sig": "final" },
+
+    "final": {
+        "tipo": "final",
+        "texto": "Procedimiento concluido exitosamente."
+    }
+};
+
+function render() {
+    const node = protocolo[nodoActual];
+    const cont = document.getElementById('contenido');
+    const opts = document.getElementById('opciones');
+    document.getElementById('titulo').innerText = node.texto;
+    cont.innerHTML = ""; opts.innerHTML = "";
+
+    if (node.campos) {
+        node.campos.forEach(c => {
+            const i = document.createElement('input');
+            i.placeholder = c; i.id = `f_${c}`; cont.appendChild(i);
+        });
+        const b = document.createElement('button'); b.className = "btn"; b.innerText = "Siguiente";
+        b.onclick = () => {
+            node.campos.forEach(c => datos[c] = document.getElementById(`f_${c}`).value);
+            irA(node.sig);
+        };
+        opts.appendChild(b);
+    } else if (node.tipo === "instruccion") {
+        cont.innerHTML = `<div class="instruccion-box ${node.danger ? 'danger' : ''}">${node.texto}</div>`;
+        const b = document.createElement('button'); b.className = "btn"; b.innerText = "Entendido";
+        b.onclick = () => irA(node.sig); opts.appendChild(b);
+    } else if (node.tipo === "final") {
+        let res = "RESUMEN PARA EL ACTA:\n";
+        for (let k in datos) res += `${k}: ${datos[k]}\n`;
+        cont.innerHTML = `<div id="log-acta">${res}</div>`;
+        const b = document.createElement('button'); b.className = "btn"; b.innerText = "Copiar y Reiniciar";
+        b.onclick = () => { 
+            navigator.clipboard.writeText(res); alert("Copiado."); 
+            datos = {}; nodoActual = "inicio"; render(); 
+        };
+        opts.appendChild(b);
+    } else {
+        node.opciones.forEach(o => {
+            const b = document.createElement('button'); b.className = "btn"; b.innerText = o.label;
+            b.onclick = () => { if(o.log) o.log(); irA(o.sig); }; opts.appendChild(b);
+        });
+    }
+}
+
+function irA(s) { nodoActual = s; render(); }
+
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js'); });
+}
+
+render();
+</script>
+</body>
+</html>
