@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Asistente DAPyT</title>
+    <title>API-DAPyT | Asistente de Primera Intervención</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#3498db">
     <style>
@@ -11,6 +11,7 @@
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); color: var(--text); padding: 10px; margin: 0; display: flex; justify-content: center; }
         #app { max-width: 480px; width: 100%; background: var(--card); padding: 20px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
         .header { text-align: center; border-bottom: 2px solid var(--accent); margin-bottom: 20px; padding-bottom: 10px; }
+        .header h1 {font-size: 24px;font-family: 'Segoe UI', sans-serif; font-weight: 500; text-transform: uppercase; margin-top: 10px;} 
         .escudo-main { display: block; margin: 0 auto 10px; width: 80px; height: auto;}
         .header small { color: var(--accent); font-weight: 800; text-transform: uppercase; letter-spacing: 2px; }
         h2 { font-size: 1.2rem; margin-bottom: 20px; color: var(--accent); }
@@ -33,7 +34,9 @@
 <div id="app">
     <div class="header">
         <img src="icon-192.png" alt="DAPyT" class="escudo-main">
+        <h1 style>Asistente Primer Interventor</h1>
         <small>División Análisis y Pericias Tecnológicas</small>
+
     </div>
     <h2 id="titulo"></h2>
     <div id="contenido"></div>
@@ -100,14 +103,29 @@ const protocolo = {
         "texto": "¿Posee tarjeta de memoria?",
         "opciones": [
             { "label": "SÍ", "sig": "mov_mem_reg" },
-            { "label": "NO", "sig": "final_universal" }
+            { "label": "NO", "sig": "mov_aislamiento", "log": () => datosEquipo.memoria = "NO POSEE" }
         ]
     },
     "mov_mem_reg": {
         "texto": "Datos de memoria:",
         "campos": ["Tipo Memoria", "Capacidad", "Inscripción"],
-        "sig": "final_universal"
+        "sig": "mov_aislamiento"
     },
+    "mov_aislamiento": {
+        "tipo": "instruccion", "danger": true,
+        "texto": "ACCIÓN DE AISLAMIENTO:\nColocar el dispositivo en una bolsa Faraday o aplicar un método de aislamiento electromagnético equivalente (Ej. papel aluminio, mínimo 5 vueltas).",
+        "sig": "mov_perifericos"
+    },
+    "mov_perifericos": {
+        "tipo": "instruccion",
+        "texto": "ACCIÓN:\nCuando sea posible, secuestrar cargador y cables de datos del dispositivo.",
+        "sig": "mov_final"
+    },
+    "mov_final": {
+        "tipo": "final",
+        "texto": "Preservar de forma individual en sobre o caja. Incorporar firmas de intervinientes en cierres y pliegues. Confeccionar planilla de cadena de custodia."
+    },
+
     /* --- LAPTOP / NOTEBOOK --- */
     "lap_estado": {
         "texto": "¿Equipo encendido?",
@@ -157,7 +175,8 @@ const protocolo = {
         "tipo": "final",
         "texto": "Proceder al Embalaje, rotulado y preservación. Fajar/clausurar puertos y accesos a discos. Incorporar firmas de intervinientes en cierres y pliegues del contenedor."
     },
-/* --- PC ESCRITORIO --- */
+
+    /* --- PC ESCRITORIO --- */
     "pc_estado": {
         "texto": "¿Equipo encendido?",
         "opciones": [
@@ -213,7 +232,6 @@ const protocolo = {
         "tipo": "final",
         "texto": "Proceder al Embalaje del dispositivo, rotulado y preservación. Fajar o clausurar todos los puertos por donde pueda ingresar o egresar información y/o energía. Prestar atención a posibles accesos con tornillos. Incorporar firmas de intervinientes en cierres y pliegues."
     },
-   
 
     /* --- VIDEO --- */
     "vid_id": {
@@ -317,6 +335,7 @@ render();
 </script>
 </body>
 </html>
+
 
 
 
