@@ -157,18 +157,17 @@ const protocolo = {
         "tipo": "final",
         "texto": "Proceder al Embalaje, rotulado y preservación. Fajar/clausurar puertos y accesos a discos. Incorporar firmas de intervinientes en cierres y pliegues del contenedor."
     },
-
-    /* --- PC ESCRITORIO --- */
+/* --- PC ESCRITORIO --- */
     "pc_estado": {
         "texto": "¿Equipo encendido?",
         "opciones": [
             { "label": "SÍ", "sig": "pc_aislar", "log": () => datosEquipo.estado = "ENCENDIDO" },
-            { "label": "NO", "sig": "pc_off_accion", "log": () => datosEquipo.estado = "APAGADO" }
+            { "label": "NO", "sig": "pc_apagar_cable", "log": () => datosEquipo.estado = "APAGADO" }
         ]
     },
     "pc_aislar": {
         "tipo": "instruccion", "danger": true,
-        "texto": "ACCIÓN: Aislar de redes (Desconectar LAN, Wifi, Bluetooth).",
+        "texto": "ACCIÓN: De ser necesario, aislar el equipo de las redes y conexiones entrantes/salientes (Cable de red, Wifi, Bluetooth).",
         "sig": "pc_monitor"
     },
     "pc_monitor": {
@@ -178,9 +177,13 @@ const protocolo = {
             { "label": "NO", "sig": "pc_mon_on" }
         ]
     },
-    "pc_mon_on": { "tipo": "instruccion", "texto": "ACCIÓN: Encender monitor.", "sig": "pc_prot" },
+    "pc_mon_on": { 
+        "tipo": "instruccion", 
+        "texto": "ACCIÓN: Encender Monitor.", 
+        "sig": "pc_doc" 
+    },
     "pc_prot": {
-        "texto": "¿Protector de pantalla activo?",
+        "texto": "¿Protector de Pantalla Activado?",
         "opciones": [
             { "label": "SÍ", "sig": "pc_mouse" },
             { "label": "NO", "sig": "pc_doc" }
@@ -188,41 +191,66 @@ const protocolo = {
     },
     "pc_mouse": {
         "tipo": "instruccion", "danger": true,
-        "texto": "ADVERTENCIA: Mover mouse suavemente. ¡NO HACER CLICK!",
+        "texto": "ADVERTENCIA: Mover mouse (no hacer click).",
         "sig": "pc_doc"
     },
     "pc_doc": {
-        "texto": "Registro de pantalla:",
-        "campos": ["Usuario Visible", "Fecha_Hora Sistema"],
-        "sig": "pc_apagar"
+        "texto": "Fotografiar pantalla y documentar información visible:",
+        "campos": ["Usuario Visible (si está bloqueado)", "Fecha y hora del Sistema Operativo"],
+        "sig": "pc_adquisicion"
     },
-    "pc_apagar": {
+    "pc_adquisicion": {
         "tipo": "instruccion",
-        "texto": "ACCIÓN: Una vez documentado, DESCONECTAR CABLE DE ALIMENTACIÓN.",
-        "sig": "final_universal"
+        "texto": "ACCIÓN ESPECIALISTA: En casos autorizados por la autoridad judicial, el personal especialista procede a la adquisición de memoria RAM, imagen forense, o descarga de información de la nube. Plasmar 2 valores de HASH en el acta.",
+        "sig": "pc_apagar_cable"
     },
-    "pc_off_accion": {
-        "tipo": "instruccion", "texto": "ACCIÓN: Desconectar cable de alimentación.", "sig": "final_universal" },
+    "pc_apagar_cable": {
+        "tipo": "instruccion",
+        "texto": "ACCIÓN: Desconectar cables de alimentación.",
+        "sig": "pc_embalaje"
+    },
+    "pc_embalaje": {
+        "tipo": "final",
+        "texto": "Proceder al Embalaje del dispositivo, rotulado y preservación. Fajar o clausurar todos los puertos por donde pueda ingresar o egresar información y/o energía. Prestar atención a posibles accesos con tornillos. Incorporar firmas de intervinientes en cierres y pliegues."
+    },
+   
 
     /* --- VIDEO --- */
     "vid_id": {
-        "texto": "Identificación de Video:",
-        "campos": ["Tipo Sistema", "Almacenamiento"],
-        "sig": "vid_on"
+        "texto": "Identificar tipo de sistema de video y lugar de almacenamiento:",
+        "campos": ["Tipo Sistema", "Lugar de Almacenamiento (Local o Remoto)"],
+        "sig": "vid_estado"
     },
-    "vid_on": {
-        "texto": "¿Equipo encendido?",
+    "vid_estado": {
+        "texto": "¿Equipo Encendido?",
         "opciones": [
-            { "label": "SÍ", "sig": "vid_on_inst", "log": () => datosEquipo.estado = "ENCENDIDO" },
-            { "label": "NO", "sig": "vid_off_inst", "log": () => datosEquipo.estado = "APAGADO" }
+            { "label": "SÍ", "sig": "vid_volcado", "log": () => datosEquipo.estado = "ENCENDIDO" },
+            { "label": "NO", "sig": "vid_desconectar", "log": () => datosEquipo.estado = "APAGADO" }
         ]
     },
-    "vid_on_inst": { "tipo": "instruccion", "texto": "ACCIÓN: Si no hay especialista para volcado caliente, DESCONECTAR ALIMENTACIÓN.", "sig": "final_universal" },
-    "vid_off_inst": { "tipo": "instruccion", "texto": "ACCIÓN: Desconectar alimentación para secuestro.", "sig": "final_universal" },
-
-    "final_universal": {
+    "vid_volcado": {
+        "tipo": "instruccion",
+        "texto": "ACCIÓN ESPECIALISTA: En casos autorizados por la autoridad judicial, el personal especialista procede al volcado en caliente a una unidad de almacenamiento extraíble aportada por autoridad judicial requirente.",
+        "sig": "vid_desconectar"
+    },
+    "vid_desconectar": {
+        "tipo": "instruccion",
+        "texto": "ACCIÓN: Desconectar cables de alimentación para su secuestro.",
+        "sig": "vid_embalaje"
+    },
+    "vid_embalaje": {
+        "tipo": "instruccion",
+        "texto": "ACCIÓN: Proceder al Embalaje del dispositivo, rotulado y preservación del dispositivo. Fajar o clausurar todos los puertos por donde pueda ingresar o egresar información y/o energía. Prestar atención a posibles accesos con tornillo tales como accesos a discos de almacenamiento.",
+        "sig": "vid_reg"
+    },
+    "vid_reg": {
+        "texto": "De ser posible, identificar y registrar (visible):",
+        "campos": ["Marca visible", "Modelo", "Número de serie", "Estado de conservación", "Otras características (stickers, rupturas, etc.)"],
+        "sig": "vid_final"
+    },
+    "vid_final": {
         "tipo": "final",
-        "texto": "Fajar/clausurar puertos y tornillos de acceso. Confeccionar cadena de custodia."
+        "texto": "Incorporar firmas de intervinientes en cierres y pliegues del sobre, fajas u otro elemento contenedor. Confeccionar planilla de cadena de custodia para cada dispositivo."
     }
 };
 
@@ -289,5 +317,6 @@ render();
 </script>
 </body>
 </html>
+
 
 
