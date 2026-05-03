@@ -2,6 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self';">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>API-DAPyT | Asistente de Primera Intervención</title>
     <link rel="manifest" href="manifest.json">
@@ -333,6 +334,7 @@ function render() {
             const i = document.createElement('input');
             i.placeholder = c;
             i.id = `f_${c}`;
+            i.maxLength = 200;
             // Restaurar valor guardado si existe
             if (camposMemoria[nodoActual] && camposMemoria[nodoActual][c] !== undefined) {
                 i.value = camposMemoria[nodoActual][c];
@@ -374,12 +376,19 @@ function render() {
         planilla += `RESPONSABLE: ${datosGral["Responsable"] || "-"}\n`;
         planilla += `\nESTADO FINAL: ${node.texto}`;
 
-        cont.innerHTML = `<div id="log-acta">${planilla}</div>`;
+        const logDiv = document.createElement('div');
+        logDiv.id = 'log-acta';
+        logDiv.textContent = planilla;
+        cont.appendChild(logDiv);
         
         const b = document.createElement('button');
         b.className = "btn";
         b.innerText = "COPIAR RESUMEN";
-        b.onclick = () => { navigator.clipboard.writeText(planilla); alert("Copiado al portapapeles."); };
+        b.onclick = () => {
+            navigator.clipboard.writeText(planilla);
+            b.innerText = "✓ COPIADO";
+            setTimeout(() => b.innerText = "COPIAR RESUMEN", 2000);
+        };
         opts.appendChild(b);
         
         const br = document.createElement('button');
